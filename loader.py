@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+import os
 
 import pytz
 from aiogram import Bot, Dispatcher
@@ -27,6 +28,9 @@ schedule_logger = logging.getLogger('schedule')
 logger.setLevel(logging.INFO)
 aiogram_logger.setLevel(logging.INFO)
 schedule_logger.setLevel(level=logging.DEBUG)
+
+if not(os.path.isdir("logs")):
+    os.mkdir('logs')
 
 main_handler = RotatingFileHandler(
     'logs/my_logger.log',

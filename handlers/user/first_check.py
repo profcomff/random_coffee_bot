@@ -22,8 +22,8 @@ async def check_and_add_registration_button(message: types.Message):
                   " отвечать не хочется, то часть шагов можно пропустить.\n\n"
                   "Нажми кнопку \"Регистрация\" ниже.\n\n"
                   "Для общения, помощи и рассказов о том, как прошла "
-                  "встреча присоединяйся к уютному сообществу бота в "
-                  "телеграм https://t.me/+Ai1RweqsyjFhNmFi"
+                  "встреча присоединяйся к нашему IT сообществу в "
+                  "телеграм https://t.me/ViribusUnitisGroup"
                   ),
             reply_markup=start_registr_markup()
         )
