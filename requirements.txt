@@ -20,3 +20,4 @@ SQLAlchemy==2.0.4
 typing_extensions==4.5.0
 yarl==1.8.2
 psycopg2
+alembic

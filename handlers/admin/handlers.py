@@ -8,8 +8,11 @@ from controllerBD.models import UserStatus
 from controllerBD.services import get_user_count_from_db
 from keyboards.admin import (admin_cancel_markup, admin_change_status_markup,
                              admin_inform_markup, admin_menu_button,
-                             admin_menu_markup, algo_start, cancel,
-                             change_status, do_not_take_part_button, go_back,
+                             admin_menu_markup, admin_pair_generation_markup,
+                             force_pair_generation, cancel, pair_generation,
+                             stop_pair_generation, renew_pair_generation,
+                             change_pair_generation_date, change_status, 
+                             do_not_take_part_button, go_back,
                              inform, inform_active_users, inform_bad_users,
                              send_message_to_all_button, take_part_button)
 from loader import bot, logger
@@ -87,6 +90,51 @@ async def change_status_message(message: types.Message):
         reply_markup=admin_change_status_markup()
     )
 
+@admin_handlers
+async def pairs_config_message(message: types.Message):
+    """Вывод кнопок настроек генерации пар."""
+    await bot.send_message(
+        message.from_user.id,
+        "Выберите вариант:",
+        reply_markup=admin_pair_generation_markup()
+    )
+
+@admin_handlers
+async def stop_generation(message: types.Message):
+    """Остановить генерацию пар."""
+    await bot.send_message(
+        message.from_user.id,
+        "Данный функционал пока что не реализован :)",
+        reply_markup=admin_pair_generation_markup()
+    )
+
+@admin_handlers
+async def renew_generation(message: types.Message):
+    """Возобновить генерацию пар."""
+    await bot.send_message(
+        message.from_user.id,
+        "Данный функционал пока что не реализован :)",
+        reply_markup=admin_pair_generation_markup()
+    )
+
+@admin_handlers
+async def change_generation_date(message: types.Message):
+    """Изменить день недели и время генерации пар."""
+    await bot.send_message(
+        message.from_user.id,
+        "Данный функционал пока что не реализован :)",
+        reply_markup=admin_pair_generation_markup()
+    )
+
+@admin_handlers
+async def generate_pairs(message: types.Message):
+    """Сгенерировать пары вручную."""
+    await start_algoritm()
+    await bot.send_message(
+        message.from_user.id,
+        "Пары успешно сгенерированы!",
+        reply_markup=admin_pair_generation_markup()
+    )
 
 @admin_handlers
 async def take_part_yes(message: types.Message):
@@ -106,12 +154,6 @@ async def take_part_no(message: types.Message):
         message.from_user.id,
         "Вы изменили статус и теперь не участвуете в распределении."
     )
-
-
-@admin_handlers
-async def handler_start_algoritm(message: types.Message):
-    """Ручной запуск алгоритма."""
-    await start_algoritm()
 
 
 def change_admin_status(message: types.Message, status):
@@ -203,9 +245,13 @@ def register_admin_handlers(dp: Dispatcher):
     dp.register_message_handler(inform_message_1, text=inform_active_users)
     dp.register_message_handler(inform_message_2, text=inform_bad_users)
     dp.register_message_handler(change_status_message, text=change_status)
+    dp.register_message_handler(pairs_config_message, text=pair_generation)
     dp.register_message_handler(take_part_yes, text=take_part_button)
     dp.register_message_handler(take_part_no, text=do_not_take_part_button)
-    dp.register_message_handler(handler_start_algoritm, text=algo_start)
+    dp.register_message_handler(generate_pairs, text=force_pair_generation)
+    dp.register_message_handler(stop_generation, text=stop_pair_generation)
+    dp.register_message_handler(renew_generation, text=renew_pair_generation)
+    dp.register_message_handler(change_generation_date, text=change_pair_generation_date)
     dp.register_message_handler(request_message_to_all,
                                 text=send_message_to_all_button)
     dp.register_message_handler(get_message_and_send,
