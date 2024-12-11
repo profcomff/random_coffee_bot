@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from controllerBD.db_loader import Base
-from controllerBD.models import *  # УРААА КОСТЫЫЫЫЛЬ
+from controllerBD.models import *
 from data.config import DB_DSN
 
 # this is the Alembic Config object, which provides
