@@ -1,8 +1,8 @@
 from aiogram import types
 from aiogram.types import ReplyKeyboardMarkup
+
 from data import ADMIN_TG_ID
-from keyboards.user.defalt_markups import (back_to_main, menu_markup,
-                                           menu_message)
+from keyboards.user.defalt_markups import back_to_main, menu_markup, menu_message
 
 admin_menu_button = "Меню администратора"
 inform = "Отчет"
@@ -50,7 +50,9 @@ def admin_menu_markup():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.row(inform, send_message_to_all_button)
     markup.row(ban_list, change_status, pair_generation)
-    markup.row(back_to_main,)
+    markup.row(
+        back_to_main,
+    )
     return markup
 
 
@@ -71,6 +73,7 @@ def admin_change_status_markup():
     markup.add(go_back)
     return markup
 
+
 def admin_pair_generation_markup():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.add(force_pair_generation)
@@ -79,6 +82,7 @@ def admin_pair_generation_markup():
     markup.add(change_pair_generation_date)
     markup.add(go_back)
     return markup
+
 
 def admin_back_markup():
     """Кнопка назад"""

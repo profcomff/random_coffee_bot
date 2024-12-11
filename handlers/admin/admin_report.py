@@ -1,11 +1,13 @@
 from sqlalchemy import text
+
 from controllerBD.db_loader import db_session
 from handlers.user.work_with_date import date_from_db_to_message
 
 
 def prepare_user_info():
     """Формируем список пользователей со штрафными баллами и другой инф."""
-    query = text("""SELECT 
+    query = text(
+        """SELECT 
             mr.about_whom_id, 
             ui.teleg_id, 
             ui.name, 
@@ -42,7 +44,8 @@ def prepare_user_info():
             mr.comment, 
             bl.ban_status
         ORDER BY MAX(mr.date_of_comment) DESC;
-        """)
+        """
+    )
 
     users = db_session.execute(query)
     return users
@@ -56,27 +59,29 @@ def prepare_report_message(users):
         if not user[3]:
             username = ""
         else:
-            username = f' (@{user[3]})'
+            username = f" (@{user[3]})"
         if user[7] == 0 or user[7] is None:
             status = "Не забанен"
         else:
             status = "Забанен"
-        if user[6] == 'null':
+        if user[6] == "null":
             comment = "Комментарий не был добавлен."
         else:
             comment = f"{user[6]}"
         date = date_from_db_to_message(user[5])
-        user_message = f'ID пользователя: {user[0]};\n' \
-                       f'Ник пользователя: <a href="tg://user?id={user[1]}">' \
-                       f'{user[2]}</a>{username}.\n' \
-                       f'Статус: {status}.\n' \
-                       f'<b>Штрафных балов - {user[4]}</b>\n' \
-                       f'{date} Последний комментарий: {comment}'
-        if len(message + '\n\n' + user_message) > 4095:
+        user_message = (
+            f"ID пользователя: {user[0]};\n"
+            f'Ник пользователя: <a href="tg://user?id={user[1]}">'
+            f"{user[2]}</a>{username}.\n"
+            f"Статус: {status}.\n"
+            f"<b>Штрафных балов - {user[4]}</b>\n"
+            f"{date} Последний комментарий: {comment}"
+        )
+        if len(message + "\n\n" + user_message) > 4095:
             message_list.append(message)
             message = user_message
         else:
-            message = message + '\n\n' + user_message
+            message = message + "\n\n" + user_message
     message_list.append(message)
 
     return message_list

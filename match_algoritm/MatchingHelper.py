@@ -3,15 +3,19 @@ import subprocess
 
 from controllerBD.db_loader import db_session
 from controllerBD.models import UserMets, UserStatus
-from controllerBD.services import (send_message_to_admins,
-                                   update_all_user_mets, update_mets)
+from controllerBD.services import (
+    send_message_to_admins,
+    update_all_user_mets,
+    update_mets,
+)
 from handlers.user.check_message import check_message
 from loader import bot, logger
 from sendler.match_messages import send_match_messages
 
 
-class MachingHelper():
+class MachingHelper:
     """Класс - интерфейс алгоритма"""
+
     vertex_conunt: int
     edges_count: int
 
@@ -23,13 +27,16 @@ class MachingHelper():
         """Подготовка алгоритма"""
         logger.info("Начало подготовки работы алгоритма")
         data_from_bd = {}
-        active_users = db_session.query(UserStatus.id).\
-            filter(UserStatus.status == 1).all()
+        active_users = (
+            db_session.query(UserStatus.id).filter(UserStatus.status == 1).all()
+        )
         active_users = [i[0] for i in active_users]
         for now_user in active_users:
-            connected_user = db_session.query(UserMets.met_info).filter(
-                UserMets.id == now_user
-            ).first()[0]
+            connected_user = (
+                db_session.query(UserMets.met_info)
+                .filter(UserMets.id == now_user)
+                .first()[0]
+            )
             connected_user = list(json.loads(connected_user).values())
             data_from_bd[now_user] = connected_user
 
@@ -37,7 +44,8 @@ class MachingHelper():
         self.all_active = list(data_from_bd.keys())
         for v in self.all_active:
             adjacency_list[v] = [
-                item for item in self.all_active if item not in data_from_bd[v]+[v]]
+                item for item in self.all_active if item not in data_from_bd[v] + [v]
+            ]
         edges = []
         for v in self.all_active:
             for i in adjacency_list[v]:
@@ -69,7 +77,12 @@ class MachingHelper():
     def start(self):
         """Запуск алгоритма"""
         logger.info("Начало работы алгоритма")
-        subprocess.call(['./match_algoritm/matchingalogitm -f ./data/match_algoritm_data/input.txt --max'], shell=True)
+        subprocess.call(
+            [
+                "./match_algoritm/matchingalogitm -f ./data/match_algoritm_data/input.txt --max"
+            ],
+            shell=True,
+        )
         res = []
         with open("./data/match_algoritm_data/output.txt", "r") as text:
             res = text.readlines()
@@ -83,18 +96,20 @@ class MachingHelper():
             matches[i] = None
         self.matchings = matches
         logger.info("Завершение работы алгоритма")
-        logger.info(f'пары {matches}')
+        logger.info(f"пары {matches}")
         return matches
 
 
 async def start_algoritm():
     """Запуск алгоритма распределения"""
-    await send_message_to_admins('Начинаем распределение')
+    await send_message_to_admins("Начинаем распределение")
     await check_message()
     mc = MachingHelper()
     res = mc.start()
-    await send_message_to_admins(f'Количество пар: {len(res)}.\n'
-                                 f'Начинаем отправку сообщений.')
+    await send_message_to_admins(
+        f"Количество пар: {len(res)}.\n" f"Начинаем отправку сообщений."
+    )
     await mc.send_and_write(res)
-    await send_message_to_admins('Сообщения пользователям отправлены.\n'
-                                 'Распределение завершено.')
+    await send_message_to_admins(
+        "Сообщения пользователям отправлены.\n" "Распределение завершено."
+    )

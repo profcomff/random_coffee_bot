@@ -77,12 +77,12 @@ jobs:
           docker run \
             --detach \
             --restart on-failure:3 \
-            --env DB_DSN='${{ secrets.DB_DSN }}' \
-            --env BOT_TOKEN='${{ secrets.BOT_TOKEN }}' \
-            --env MARKETING_URL='${{ vars.MARKETING_URL }}' \
-            --env PRINT_URL='${{ vars.PRINT_URL }}' \
-            --env PRINT_URL_QR=${{ vars.PRINT_URL_QR }} \
-            --env MAX_PDF_SIZE_MB=${{ vars.MAX_PDF_SIZE_MB }} \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
+            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
+            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
+            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
 
@@ -105,11 +105,11 @@ jobs:
           docker run \
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env BOT_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
-            --env PRINT_URL=${{ vars.PRINT_URL }} \
-            --env PRINT_URL_QR=${{ vars.PRINT_URL_QR }} \
-            --env MAX_PDF_SIZE_MB=${{ vars.MAX_PDF_SIZE_MB }} \
+            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
+            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
+            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }}_migration \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             alembic upgrade head
@@ -119,11 +119,11 @@ jobs:
           docker run \
             --detach \
             --restart always \
-            --env DB_DSN='${{ secrets.DB_DSN }}' \
-            --env BOT_TOKEN='${{ secrets.BOT_TOKEN }}' \
-            --env MARKETING_URL='${{ vars.MARKETING_URL }}' \
-            --env PRINT_URL='${{ vars.PRINT_URL }}' \
-            --env PRINT_URL_QR=${{ vars.PRINT_URL_QR }} \
-            --env MAX_PDF_SIZE_MB=${{ vars.MAX_PDF_SIZE_MB }} \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
+            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
+            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
+            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest

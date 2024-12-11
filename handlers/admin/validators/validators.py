@@ -23,20 +23,13 @@ async def ban_validator(message: types.Message):
             if not await check_id_in_ban_with_status(message.text, 1):
                 logger.info("Валидация пройдена.")
                 return True
-            await bot.send_message(
-                message.from_user.id,
-                "Пользователь уже забаннен."
-            )
+            await bot.send_message(message.from_user.id, "Пользователь уже забаннен.")
             return False
         await bot.send_message(
-            message.from_user.id,
-            "Пользователя с таким id не существует."
+            message.from_user.id, "Пользователя с таким id не существует."
         )
         return False
-    await bot.send_message(
-        message.from_user.id,
-        "Неверный ввод, введите число."
-    )
+    await bot.send_message(message.from_user.id, "Неверный ввод, введите число.")
     return False
 
 
@@ -47,20 +40,13 @@ async def unban_validator(message: types.Message):
             if await check_id_in_ban_with_status(message.text, 1):
                 logger.info("Валидация пройдена.")
                 return True
-            await bot.send_message(
-                message.from_user.id,
-                "Пользователь не забаннен."
-            )
+            await bot.send_message(message.from_user.id, "Пользователь не забаннен.")
             return False
         await bot.send_message(
-            message.from_user.id,
-            "Пользователя с таким id не существует."
+            message.from_user.id, "Пользователя с таким id не существует."
         )
         return False
-    await bot.send_message(
-        message.from_user.id,
-        "Неверный ввод, введите число."
-    )
+    await bot.send_message(message.from_user.id, "Неверный ввод, введите число.")
     return False
 
 

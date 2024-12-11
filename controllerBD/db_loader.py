@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy.orm import Session, declarative_base
+
 from data.config import DB_DSN
 
 engine = create_engine(DB_DSN)
