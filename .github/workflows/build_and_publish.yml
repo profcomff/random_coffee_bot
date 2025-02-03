@@ -63,7 +63,7 @@ jobs:
           docker run \
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env TOKEN=${{ secrets.TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
