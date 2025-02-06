@@ -1,10 +1,9 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from data.config import DB_DSN
 
-engine = create_engine(DB_DSN)
-engine.connect()
-db_session = Session(bind=engine)
+engine = create_engine(DB_DSN, pool_pre_ping=True, isolation_level='AUTOCOMMIT')
+db_session = sessionmaker(bind=engine)
 
 Base = declarative_base()
