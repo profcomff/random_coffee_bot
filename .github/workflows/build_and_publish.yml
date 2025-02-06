@@ -52,7 +52,7 @@ jobs:
     environment:
       name: Testing
     env:
-      CONTAINER_NAME: com_profcomff_tgbot_print_test
+      CONTAINER_NAME: com_profcomff_tgbot_raondomcoffee_test
     permissions:
       packages: read
     steps:
@@ -63,7 +63,7 @@ jobs:
           docker run \
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TOKEN=${{ secrets.TOKEN }} \
+            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
@@ -78,7 +78,7 @@ jobs:
             --detach \
             --restart on-failure:3 \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
@@ -94,7 +94,7 @@ jobs:
     environment:
       name: Production
     env:
-      CONTAINER_NAME: com_profcomff_tgbot_print
+      CONTAINER_NAME: com_profcomff_tgbot_raondomcoffee
     permissions:
       packages: read
     steps:
@@ -105,7 +105,7 @@ jobs:
           docker run \
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
@@ -120,7 +120,7 @@ jobs:
             --detach \
             --restart always \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.BOT_TOKEN }} \
+            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
             --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
