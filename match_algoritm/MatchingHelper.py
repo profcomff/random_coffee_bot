@@ -41,17 +41,20 @@ class MachingHelper:
                 connected_user = list(json.loads(connected_user).values())
                 data_from_bd[now_user] = connected_user
 
+        logger.debug(f"data_from_bd: {data_from_bd}")
         adjacency_list = {}
         self.all_active = list(data_from_bd.keys())
         for v in self.all_active:
             adjacency_list[v] = [
                 item for item in self.all_active if item not in data_from_bd[v] + [v]
             ]
+        logger.debug(f"adjacency_list: {adjacency_list}")
         edges = []
         for v in self.all_active:
             for i in adjacency_list[v]:
                 edges.append((max(v, i), min(v, i)))
                 edges = list(set(edges))
+                logger.debug(edges)
         str_edges = ""
         temp = ""
         for i in edges:
@@ -60,6 +63,7 @@ class MachingHelper:
         self.edges_count = len(edges)
         self.vertex_conunt = max(self.all_active) + 1
         res = f"{self.vertex_conunt}\n{self.edges_count}\n{str_edges}"
+        logger.debug(f"res: {res}")
         with open("./data/match_algoritm_data/input.txt", "w") as text:
             text.write(res)
         with open("./data/match_algoritm_data/temp.txt", "w") as text:
