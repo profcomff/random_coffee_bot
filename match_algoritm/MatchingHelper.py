@@ -38,7 +38,7 @@ class MachingHelper:
                     .filter(UserMets.id == now_user)
                     .first()[0]
                 )
-                connected_user = list(json.loads(connected_user).values())
+                connected_user = list(set(json.loads(connected_user).values()))
                 data_from_bd[now_user] = connected_user
 
         logger.debug(f"data_from_bd: {data_from_bd}")
