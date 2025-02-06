@@ -41,7 +41,7 @@ def update_one_user_mets(first_user: int, second_user: int):
         new_met_id = (
             db_session.query(MetInfo.id)
             .filter(
-                MetInfo.date == date.today(),
+                MetInfo.date == str(date.today),
                 or_(
                     MetInfo.first_user_id == first_user,
                     MetInfo.second_user_id == first_user,
