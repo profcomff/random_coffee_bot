@@ -77,8 +77,8 @@ async def inform_message_1(message: types.Message):
     for user in active_users:
         await bot.send_message(
             message.from_user.id,
-            f"Имя: {user['name']}",
-            f"Телеграм: {user['tg_username']}"
+            f"Имя: {user['name']}\n"
+            f"Телеграм: {user['tg_username']}",
         )
 
 
