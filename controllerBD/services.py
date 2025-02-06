@@ -15,6 +15,7 @@ async def update_mets(match_info: dict):
         try:
             with Session() as db_session:
                 if all(match):
+                    logger.debug(f"Adding match: {match}")
                     first_user = match[0]
                     second_user = match[1]
                     db_session.add(
@@ -24,6 +25,7 @@ async def update_mets(match_info: dict):
                             date=str(date.today()),
                         )
                     )
+                    db_session.commit()
         except Exception as error:
             logger.error(
                 f"Встреча для пользователей {match} " f"не записана. Ошибка - {error}"
@@ -41,7 +43,7 @@ def update_one_user_mets(first_user: int, second_user: int):
         new_met_id = (
             db_session.query(MetInfo.id)
             .filter(
-                MetInfo.date == str(date.today),
+                MetInfo.date == str(date.today()),
                 or_(
                     MetInfo.first_user_id == first_user,
                     MetInfo.second_user_id == first_user,
