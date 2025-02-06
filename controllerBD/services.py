@@ -104,6 +104,14 @@ def get_user_count_from_db():
         active_users = db_session.query(UserStatus).filter(UserStatus.status == 1).count()
         return {"all_users": all_users, "active_users": active_users}
 
+def get_active_user_names_from_db():
+    users = []
+    with Session() as db_session:
+        for active_user_id, status in db_session.query(UserStatus).filter(UserStatus.status == 1).all():
+            user_tg_username = db_session.query(Username).filter(Username.id == active_user_id).one_or_none().username
+            user_name = db_session.query(Users).filter(Users.id == active_user_id).one_or_none().name
+            users.append({"name": user_name, "tg_username": user_tg_username})
+        return users
 
 def get_user_id_from_db(teleg_id: int) -> int:
     """Получает id юзера в базе по телеграм id"""

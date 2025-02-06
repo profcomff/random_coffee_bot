@@ -6,7 +6,7 @@ from aiogram.utils.exceptions import BotBlocked
 
 from controllerBD.db_loader import Session
 from controllerBD.models import UserStatus
-from controllerBD.services import get_user_count_from_db
+from controllerBD.services import get_user_count_from_db, get_active_user_names_from_db
 from handlers.admin.admin_report import prepare_report_message, prepare_user_info
 from handlers.decorators import admin_handlers
 from handlers.user.check_message import prepare_user_list, send_message
@@ -67,12 +67,19 @@ async def inform_message(message: types.Message):
 @admin_handlers
 async def inform_message_1(message: types.Message):
     """Вывод сообщения со списком активных пользователей."""
-    users = get_user_count_from_db()
+    users_count = get_user_count_from_db()
     await bot.send_message(
         message.from_user.id,
-        f"Всего пользователей - {users['all_users']};\n\n"
-        f"Активных пользователей - {users['active_users']}.",
+        f"Всего пользователей - {users_count['all_users']};\n\n"
+        f"Активных пользователей - {users_count['active_users']}.",
     )
+    active_users = get_active_user_names_from_db()
+    for user in active_users:
+        await bot.send_message(
+            message.from_user.id,
+            f"Имя: {user['name']}",
+            f"Телеграм: {user['tg_username']}"
+        )
 
 
 @admin_handlers
