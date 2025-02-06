@@ -14,7 +14,7 @@ async def update_mets(match_info: dict):
     for match in match_info.items():
         try:
             with Session() as db_session:
-                if all(match):
+                if match[1] and match[2]:
                     logger.debug(f"Adding match: {match}")
                     first_user = match[0]
                     second_user = match[1]
@@ -64,7 +64,7 @@ def update_one_user_mets(first_user: int, second_user: int):
 def update_all_user_mets(match_info: dict):
     """Записывает в user_mets всю информацию о новых встречах."""
     for match in match_info.items():
-        if all(match):
+        if match[1] and match[2]:
             first_user = match[0]
             second_user = match[1]
             try:

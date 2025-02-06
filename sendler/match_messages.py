@@ -74,12 +74,19 @@ async def send_match_messages(match_info: dict, bot: Bot):
                 )
         else:
             fail_user = users_info[0]
-            fail_user_db_id = fail_user[0]
-            default_user_db_id = get_defaulf_pare_base_id()
-            fail_match = {fail_user_db_id: default_user_db_id}
-            await update_mets(fail_match)
-            update_all_user_mets(fail_match)
-            await send_match_messages(fail_match, bot)
+            fail_user_tg_id = fail_user[1]
+            await bot.send_message(
+                fail_user_tg_id,
+                "К сожалению не удалось найти для тебя пару :(\n"
+                "Можешь написать кому-нибудь, у кого есть пара и договориться встретиться на троих.",
+                parse_mode="HTML",
+                reply_markup=help_texts_markup(),
+            )
+            # default_user_db_id = get_defaulf_pare_base_id()
+            # fail_match = {fail_user_db_id: default_user_db_id}
+            # await update_mets(fail_match)
+            # update_all_user_mets(fail_match)
+            # await send_match_messages(fail_match, bot)
 
     logger.info("Завершение рассылки сообщений о новых встречах")
 
