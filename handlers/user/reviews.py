@@ -4,7 +4,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from sqlalchemy import and_, desc, exists, or_
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo, MetsReview
 from handlers.decorators import admin_handlers
 from handlers.user.get_info_from_table import (
@@ -156,13 +156,14 @@ def preparing_list_of_users_id():
     """Выгрузка списка ID пользователей из
     таблицы проведенных встреч за неделю."""
     start_period = datetime.date.today() - datetime.timedelta(days=7)
-    data = (
-        db_session.query(MetInfo.first_user_id, MetInfo.second_user_id)
-        .filter(MetInfo.date.between(str(start_period), str(datetime.date.today)))
-        .all()
-    )
-    logger.info("Список ID для рассылки на отзывы сформирован")
-    return [element[0] for element in data] + [element[1] for element in data]
+    with Session() as db_session:
+        data = (
+            db_session.query(MetInfo.first_user_id, MetInfo.second_user_id)
+            .filter(MetInfo.date.between(str(start_period), str(datetime.date.today)))
+            .all()
+        )
+        logger.info("Список ID для рассылки на отзывы сформирован")
+        return [element[0] for element in data] + [element[1] for element in data]
 
 
 async def save_or_update_review(message, state):
@@ -185,71 +186,75 @@ async def save_or_update_review(message, state):
 def get_met_id_with_user_last_week(user_id):
     """Получение id встречи по пользователю за прошедшую неделю."""
     start_period = datetime.date.today() - datetime.timedelta(days=7)
-    met_id = (
-        db_session.query(MetInfo.id)
-        .filter(
-            and_(
-                MetInfo.date.between(str(start_period), str(datetime.date.today)),
-                or_(
-                    MetInfo.first_user_id == user_id, MetInfo.second_user_id == user_id
-                ),
+    with Session() as db_session:
+        met_id = (
+            db_session.query(MetInfo.id)
+            .filter(
+                and_(
+                    MetInfo.date.between(str(start_period), str(datetime.date.today)),
+                    or_(
+                        MetInfo.first_user_id == user_id, MetInfo.second_user_id == user_id
+                    ),
+                )
             )
+            .order_by(desc(MetInfo.id))
+            .limit(1)
+            .first()
         )
-        .order_by(desc(MetInfo.id))
-        .limit(1)
-        .first()
-    )
-    return met_id
+        return met_id
 
 
 async def check_comment_in_bd(user_id, met_id):
     """Проверка наличия отзыва на встречу."""
-    is_exist = db_session.query(
-        exists().where(and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id))
-    ).scalar()
-    if not is_exist:
-        return False
-    return True
+    with Session() as db_session:
+        is_exist = db_session.query(
+            exists().where(and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id))
+        ).scalar()
+        if not is_exist:
+            return False
+        return True
 
 
 def update_review(user_id, met_id, grade, comment):
     """Обновление комментария о встрече."""
-    db_session.query(MetsReview).filter(
-        and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id)
-    ).update(
-        {
-            "grade": grade,
-            "comment": comment,
-            "date_of_comment": str(datetime.date.today()),
-        }
-    )
-    db_session.commit()
-    logger.info(
-        f"Пользователь с ID {user_id} " f"обновил комментарий о встрече {met_id}"
-    )
+    with Session() as db_session:
+        db_session.query(MetsReview).filter(
+            and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id)
+        ).update(
+            {
+                "grade": grade,
+                "comment": comment,
+                "date_of_comment": str(datetime.date.today()),
+            }
+        )
+        db_session.commit()
+        logger.info(
+            f"Пользователь с ID {user_id} " f"обновил комментарий о встрече {met_id}"
+        )
 
 
 def add_review(user_id, met_id, grade, comment):
     """Добавление комментария о встрече"""
-    users = db_session.query(MetInfo).filter(MetInfo.id == met_id).first().__dict__
-    if users["first_user_id"] == user_id:
-        about_whom_id = users["second_user_id"]
-    else:
-        about_whom_id = users["first_user_id"]
-    db_session.add(
-        MetsReview(
-            met_id=met_id,
-            who_id=user_id,
-            about_whom_id=about_whom_id,
-            grade=grade,
-            comment=comment,
-            date_of_comment=datetime.date.today(),
+    with Session() as db_session:
+        users = db_session.query(MetInfo).filter(MetInfo.id == met_id).first().__dict__
+        if users["first_user_id"] == user_id:
+            about_whom_id = users["second_user_id"]
+        else:
+            about_whom_id = users["first_user_id"]
+        db_session.add(
+            MetsReview(
+                met_id=met_id,
+                who_id=user_id,
+                about_whom_id=about_whom_id,
+                grade=grade,
+                comment=comment,
+                date_of_comment=datetime.date.today(),
+            )
         )
-    )
-    db_session.commit()
-    logger.info(
-        f"Пользователь с ID {user_id} " f"добавил комментарий о встрече {met_id}"
-    )
+        db_session.commit()
+        logger.info(
+            f"Пользователь с ID {user_id} " f"добавил комментарий о встрече {met_id}"
+        )
 
 
 # def get_met_id_with_user_last_three(user_id):

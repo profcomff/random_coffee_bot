@@ -1,7 +1,7 @@
 import json
 import subprocess
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import UserMets, UserStatus
 from controllerBD.services import (
     send_message_to_admins,
@@ -26,19 +26,20 @@ class MachingHelper:
     def prepare(self):
         """Подготовка алгоритма"""
         logger.info("Начало подготовки работы алгоритма")
-        data_from_bd = {}
-        active_users = (
-            db_session.query(UserStatus.id).filter(UserStatus.status == 1).all()
-        )
-        active_users = [i[0] for i in active_users]
-        for now_user in active_users:
-            connected_user = (
-                db_session.query(UserMets.met_info)
-                .filter(UserMets.id == now_user)
-                .first()[0]
+        with Session() as db_session:
+            data_from_bd = {}
+            active_users = (
+                db_session.query(UserStatus.id).filter(UserStatus.status == 1).all()
             )
-            connected_user = list(json.loads(connected_user).values())
-            data_from_bd[now_user] = connected_user
+            active_users = [i[0] for i in active_users]
+            for now_user in active_users:
+                connected_user = (
+                    db_session.query(UserMets.met_info)
+                    .filter(UserMets.id == now_user)
+                    .first()[0]
+                )
+                connected_user = list(json.loads(connected_user).values())
+                data_from_bd[now_user] = connected_user
 
         adjacency_list = {}
         self.all_active = list(data_from_bd.keys())

@@ -5,7 +5,7 @@ from aiogram.utils.callback_data import CallbackData
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.exc import NoResultFound
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo, MetsReview
 from controllerBD.services import get_tg_username_from_db_by_base_id
 from handlers.decorators import user_handlers
@@ -24,16 +24,17 @@ review_callbackdata = CallbackData("dun_w", "position", "edit")
 
 def list_of_user_mets_id(user_id):
     """Получение id всех встреч пользователя."""
-    met_ids = (
-        db_session.query(MetInfo.id)
-        .filter(
-            or_(MetInfo.first_user_id == user_id, MetInfo.second_user_id == user_id)
+    with Session() as db_session:
+        met_ids = (
+            db_session.query(MetInfo.id)
+            .filter(
+                or_(MetInfo.first_user_id == user_id, MetInfo.second_user_id == user_id)
+            )
+            .order_by(desc(MetInfo.id))
+            .limit(10)
+            .all()
         )
-        .order_by(desc(MetInfo.id))
-        .limit(10)
-        .all()
-    )
-    return [met_id[0] for met_id in met_ids]
+        return [met_id[0] for met_id in met_ids]
 
 
 # @dp.message_handler(text=my_reviews)
@@ -182,19 +183,21 @@ def prepare_message(user_id, met_id, review_info):
 
 def get_sqliterow_about_met(met_id):
     """Получаем словарь строки MetInfo."""
-    met_info = db_session.query(MetInfo).filter(MetInfo.id == met_id).first().__dict__
-    return met_info
+    with Session() as db_session:
+        met_info = db_session.query(MetInfo).filter(MetInfo.id == met_id).first().__dict__
+        return met_info
 
 
 def get_sqliterow_review(met_id, user_id):
     """Получаем словарь строки Review."""
     try:
-        review_info = (
-            db_session.query(MetsReview)
-            .filter(and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id))
-            .one()
-            .__dict__
-        )
+        with Session() as db_session:
+            review_info = (
+                db_session.query(MetsReview)
+                .filter(and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id))
+                .one()
+                .__dict__
+            )
     except NoResultFound:
         review_info = None
     return review_info

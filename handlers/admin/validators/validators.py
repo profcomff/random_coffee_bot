@@ -3,7 +3,7 @@ import re
 from aiogram import types
 from sqlalchemy import exists
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import Users
 from handlers.user.ban_check import check_id_in_ban_with_status
 from loader import bot, logger
@@ -52,7 +52,8 @@ async def unban_validator(message: types.Message):
 
 async def check_id_in_base(user_id):
     """Проверяем пользователя на наличие в БД."""
-    is_exist = db_session.query(exists().where(Users.id == user_id)).scalar()
-    if not is_exist:
-        return False
-    return True
+    with Session() as db_session:
+        is_exist = db_session.query(exists().where(Users.id == user_id)).scalar()
+        if not is_exist:
+            return False
+        return True

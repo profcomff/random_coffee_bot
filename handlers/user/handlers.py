@@ -1,7 +1,7 @@
 from aiogram import exceptions, types
 from aiogram.dispatcher import Dispatcher
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo
 from handlers.decorators import user_handlers
 from handlers.user.add_username import check_username
@@ -191,14 +191,15 @@ async def my_pare_check(message: types.Message):
             message.from_user.id, "Ты не участвовал в последнем распределении."
         )
     else:
-        users = (
-            db_session.query(MetInfo).filter(MetInfo.id == met_id[0]).first().__dict__
-        )
-        if users["first_user_id"] == user_id:
-            user_info = get_full_user_info_by_id(users["second_user_id"])
-        else:
-            user_info = get_full_user_info_by_id(users["first_user_id"])
-        message_text = make_message(user_info)
+        with Session() as db_session:
+            users = (
+                db_session.query(MetInfo).filter(MetInfo.id == met_id[0]).first().__dict__
+            )
+            if users["first_user_id"] == user_id:
+                user_info = get_full_user_info_by_id(users["second_user_id"])
+            else:
+                user_info = get_full_user_info_by_id(users["first_user_id"])
+            message_text = make_message(user_info)
         try:
             await bot.send_message(
                 message.from_user.id,

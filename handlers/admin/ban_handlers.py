@@ -3,7 +3,7 @@ import datetime
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import BanList, Holidays, UserStatus
 from handlers.admin.handlers import admin_menu
 from handlers.admin.validators import ban_validator, comment_validator, unban_validator
@@ -94,21 +94,22 @@ async def comment_to_ban_answer(message: types.Message, state: FSMContext):
 
 async def save_to_ban(banned_user_id, comment):
     """Запись в БД пользователя с баном."""
-    db_session.add(
-        BanList(
-            banned_user_id=banned_user_id,
-            ban_status=1,
-            comment_to_ban=comment,
-            date_of_ban=str(datetime.date.today()),
+    with Session() as db_session:
+        db_session.add(
+            BanList(
+                banned_user_id=banned_user_id,
+                ban_status=1,
+                comment_to_ban=comment,
+                date_of_ban=str(datetime.date.today()),
+            )
         )
-    )
-    db_session.query(Holidays).filter(Holidays.id == banned_user_id).update(
-        {"status": 0, "till_date": "null"}
-    )
-    db_session.query(UserStatus).filter(UserStatus.id == banned_user_id).update(
-        {"status": 0}
-    )
-    db_session.commit()
+        db_session.query(Holidays).filter(Holidays.id == banned_user_id).update(
+            {"status": 0, "till_date": "null"}
+        )
+        db_session.query(UserStatus).filter(UserStatus.id == banned_user_id).update(
+            {"status": 0}
+        )
+        db_session.commit()
 
 
 # @dp.message_handler(text=remove_from_ban_list)
@@ -166,17 +167,18 @@ async def comment_to_unban_answer(message: types.Message, state: FSMContext):
 
 async def save_to_unban(unbanned_user_id, comment):
     """Сохранение в БД, что пользователь выведен из бана."""
-    db_session.query(BanList).filter(BanList.banned_user_id == unbanned_user_id).update(
-        {
-            "ban_status": 0,
-            "date_of_unban": datetime.date.today(),
-            "comment_to_unban": comment,
-        }
-    )
-    db_session.query(UserStatus).filter(UserStatus.id == unbanned_user_id).update(
-        {"status": 1}
-    )
-    db_session.commit()
+    with Session() as db_session:
+        db_session.query(BanList).filter(BanList.banned_user_id == unbanned_user_id).update(
+            {
+                "ban_status": 0,
+                "date_of_unban": datetime.date.today(),
+                "comment_to_unban": comment,
+            }
+        )
+        db_session.query(UserStatus).filter(UserStatus.id == unbanned_user_id).update(
+            {"status": 1}
+        )
+        db_session.commit()
 
 
 # @dp.message_handler(text=back_to_main, state="*")

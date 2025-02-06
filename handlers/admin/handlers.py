@@ -4,7 +4,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import BotBlocked
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import UserStatus
 from controllerBD.services import get_user_count_from_db
 from handlers.admin.admin_report import prepare_report_message, prepare_user_info
@@ -170,10 +170,11 @@ async def take_part_no(message: types.Message):
 
 
 def change_admin_status(message: types.Message, status):
-    user_id = get_id_from_user_info_table(message.from_user.id)
-    db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
-        {"status": status}
-    )
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(message.from_user.id)
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": status}
+        )
 
 
 @admin_handlers

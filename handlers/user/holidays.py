@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from sqlalchemy import and_
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import Holidays, UserStatus
 from handlers.decorators import user_handlers
 from handlers.user.check_message import send_message
@@ -87,69 +87,73 @@ async def get_three_week_holidays(message: types.Message):
 @user_handlers
 async def cancel_holidays(message: types.Message):
     """Отключение режима каникул"""
-    user_id = get_id_from_user_info_table(message.from_user.id)
-    db_session.query(Holidays).filter(Holidays.id == user_id).update(
-        {"status": 0, "till_date": "null"}
-    )
-    db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 1})
-    db_session.commit()
-    await bot.send_message(message.from_user.id, text="Режим каникул был отключен")
-    logger.info(
-        f"Пользователь с TG_ID {message.from_user.id} " f"отключил режим каникул"
-    )
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(message.from_user.id)
+        db_session.query(Holidays).filter(Holidays.id == user_id).update(
+            {"status": 0, "till_date": "null"}
+        )
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 1})
+        db_session.commit()
+        await bot.send_message(message.from_user.id, text="Режим каникул был отключен")
+        logger.info(
+            f"Пользователь с TG_ID {message.from_user.id} " f"отключил режим каникул"
+        )
 
 
 async def get_holidays(message: types.Message, date_to_return):
     """Запись данных о каникулах в БД"""
-    user_id = get_id_from_user_info_table(message.from_user.id)
-    db_session.query(Holidays).filter(Holidays.id == user_id).update(
-        {"status": 1, "till_date": str(date_to_return)}
-    )
-    db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
-    db_session.commit()
-    logger.info(
-        f"Пользователь с TG_ID {message.from_user.id} "
-        f"установил режим каникул до {date_to_return}"
-    )
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(message.from_user.id)
+        db_session.query(Holidays).filter(Holidays.id == user_id).update(
+            {"status": 1, "till_date": str(date_to_return)}
+        )
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
+        db_session.commit()
+        logger.info(
+            f"Пользователь с TG_ID {message.from_user.id} "
+            f"установил режим каникул до {date_to_return}"
+        )
 
 
 async def check_holidays_until(teleg_id):
     """Проверка даты окончания каникул пользователя в БД"""
-    user_id = get_id_from_user_info_table(teleg_id)
-    row = db_session.query(Holidays).filter(Holidays.id == user_id).first().__dict__
-    if row["status"] == 0:
-        pass
-    else:
-        await bot.send_message(
-            teleg_id,
-            text=f"Каникулы установлены до "
-            f'{date_from_db_to_message(row["till_date"])}.\n'
-            f"Ты начнешь участвовать в распределении пар "
-            f"со следующего дня.",
-        )
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(teleg_id)
+        row = db_session.query(Holidays).filter(Holidays.id == user_id).first().__dict__
+        if row["status"] == 0:
+            pass
+        else:
+            await bot.send_message(
+                teleg_id,
+                text=f"Каникулы установлены до "
+                f'{date_from_db_to_message(row["till_date"])}.\n'
+                f"Ты начнешь участвовать в распределении пар "
+                f"со следующего дня.",
+            )
 
 
 async def sheduled_check_holidays():
     """Отключение режима каникул при окончании срока. Проверка по расписанию"""
     logger.info("Начало автопроверки статуса каникул")
-    data = (
-        db_session.query(Holidays.id)
-        .filter(and_(Holidays.status == 1, Holidays.till_date == str(date.today())))
-        .all()
-    )
-    if data:
-        for row in data:
-            user_id = get_teleg_id_from_user_info_table(row[0])
-            db_session.query(Holidays).filter(Holidays.id == row[0]).update(
-                {"status": 0, "till_date": "null"}
-            )
-            db_session.query(UserStatus).filter(UserStatus.id == row[0]).update(
-                {"status": 1}
-            )
-            db_session.commit()
-            await send_message(teleg_id=user_id, text="Режим каникул был отключен")
-            logger.info(f"Каникулы юзера {user_id} отключены автопроверкой")
-    logger.info("Конец автопроверки статуса каникул")
+    with Session() as db_session:
+        data = (
+            db_session.query(Holidays.id)
+            .filter(and_(Holidays.status == 1, Holidays.till_date == str(date.today())))
+            .all()
+        )
+        if data:
+            for row in data:
+                user_id = get_teleg_id_from_user_info_table(row[0])
+                db_session.query(Holidays).filter(Holidays.id == row[0]).update(
+                    {"status": 0, "till_date": "null"}
+                )
+                db_session.query(UserStatus).filter(UserStatus.id == row[0]).update(
+                    {"status": 1}
+                )
+                db_session.commit()
+                await send_message(teleg_id=user_id, text="Режим каникул был отключен")
+                logger.info(f"Каникулы юзера {user_id} отключены автопроверкой")
+        logger.info("Конец автопроверки статуса каникул")
 
 
 def register_holidays_handlers(dp: Dispatcher):

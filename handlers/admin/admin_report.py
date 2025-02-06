@@ -1,54 +1,55 @@
 from sqlalchemy import text
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from handlers.user.work_with_date import date_from_db_to_message
 
 
 def prepare_user_info():
     """Формируем список пользователей со штрафными баллами и другой инф."""
-    query = text(
-        """SELECT 
-            mr.about_whom_id, 
-            ui.teleg_id, 
-            ui.name, 
-            un.username, 
-            COUNT(
-                CASE
-                    WHEN mr.grade = 0 THEN 1
-                    ELSE NULL
-                END
-            ) AS cnt_fail, 
-            MAX(mr.date_of_comment) AS last_comment, 
-            mr.comment,
-            bl.ban_status
-        FROM mets_reviews AS mr
-        LEFT JOIN user_info AS ui 
-            ON mr.about_whom_id = ui.id
-        LEFT JOIN tg_usernames AS un 
-            ON mr.about_whom_id = un.id
-        LEFT JOIN (
-            SELECT 
-                banned_user_id, 
-                MAX(id) AS max_id, 
-                ban_status
-            FROM ban_list
-            GROUP BY banned_user_id, ban_status
-        ) AS bl 
-            ON mr.about_whom_id = bl.banned_user_id
-        WHERE mr.grade = 0
-        GROUP BY 
-            mr.about_whom_id, 
-            ui.teleg_id, 
-            ui.name, 
-            un.username, 
-            mr.comment, 
-            bl.ban_status
-        ORDER BY MAX(mr.date_of_comment) DESC;
-        """
-    )
+    with Session() as db_session:
+        query = text(
+            """SELECT 
+                mr.about_whom_id, 
+                ui.teleg_id, 
+                ui.name, 
+                un.username, 
+                COUNT(
+                    CASE
+                        WHEN mr.grade = 0 THEN 1
+                        ELSE NULL
+                    END
+                ) AS cnt_fail, 
+                MAX(mr.date_of_comment) AS last_comment, 
+                mr.comment,
+                bl.ban_status
+            FROM mets_reviews AS mr
+            LEFT JOIN user_info AS ui 
+                ON mr.about_whom_id = ui.id
+            LEFT JOIN tg_usernames AS un 
+                ON mr.about_whom_id = un.id
+            LEFT JOIN (
+                SELECT 
+                    banned_user_id, 
+                    MAX(id) AS max_id, 
+                    ban_status
+                FROM ban_list
+                GROUP BY banned_user_id, ban_status
+            ) AS bl 
+                ON mr.about_whom_id = bl.banned_user_id
+            WHERE mr.grade = 0
+            GROUP BY 
+                mr.about_whom_id, 
+                ui.teleg_id, 
+                ui.name, 
+                un.username, 
+                mr.comment, 
+                bl.ban_status
+            ORDER BY MAX(mr.date_of_comment) DESC;
+            """
+        )
 
-    users = db_session.execute(query)
-    return users
+        users = db_session.execute(query)
+        return users
 
 
 def prepare_report_message(users):

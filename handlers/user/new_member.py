@@ -2,7 +2,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import Gender, Holidays, UserMets, Users, UserStatus
 from handlers.admin.ban_handlers import back_to_main_markup
 from handlers.user.add_username import check_username
@@ -44,7 +44,8 @@ async def return_to_begin(message: types.Message, state: FSMContext):
 
 def get_gender_from_db(status):
     """Получаем пол пользователя по id пола"""
-    info = db_session.query(Gender.gender_name).filter(Gender.id == status).first()
+    with Session() as db_session:
+        info = db_session.query(Gender.gender_name).filter(Gender.id == status).first()
     return info[0]
 
 
@@ -102,13 +103,14 @@ def add_to_db(teleg_id, name, birthday, about, gender):
         pass
     else:
         birthday = date_from_message_to_db(birthday)
-    db_session.add(
-        Users(
-            teleg_id=teleg_id, name=name, birthday=birthday, about=about, gender=gender
+    with Session() as db_session:
+        db_session.add(
+            Users(
+                teleg_id=teleg_id, name=name, birthday=birthday, about=about, gender=gender
+            )
         )
-    )
-    db_session.commit()
-    logger.info(f"Пользователь с TG_ID {teleg_id} " f"добавлен в БД как новый участник")
+        db_session.commit()
+        logger.info(f"Пользователь с TG_ID {teleg_id} " f"добавлен в БД как новый участник")
 
 
 def update_profile_db(teleg_id, name, birthday, about, gender):
@@ -117,23 +119,25 @@ def update_profile_db(teleg_id, name, birthday, about, gender):
         pass
     else:
         birthday = date_from_message_to_db(birthday)
-    db_session.query(Users).filter(Users.teleg_id == teleg_id).update(
-        {"name": name, "birthday": birthday, "about": about, "gender": gender}
-    )
-    db_session.commit()
+    with Session() as db_session:
+        db_session.query(Users).filter(Users.teleg_id == teleg_id).update(
+            {"name": name, "birthday": birthday, "about": about, "gender": gender}
+        )
+        db_session.commit()
     logger.info(f"Пользователь с TG_ID {teleg_id} " f"обновил информацию о себе")
 
 
 async def add_new_user_in_status_table(message):
     """Проставляем статусы участия в таблицах БД"""
-    user_id = get_id_from_user_info_table(message.from_user.id)
-    db_session.add(UserStatus(id=user_id))
-    db_session.commit()
-    db_session.add(UserMets(id=user_id))
-    db_session.commit()
-    db_session.add(Holidays(id=user_id))
-    db_session.commit()
-    await check_username(message)
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(message.from_user.id)
+        db_session.add(UserStatus(id=user_id))
+        db_session.commit()
+        db_session.add(UserMets(id=user_id))
+        db_session.commit()
+        db_session.add(Holidays(id=user_id))
+        db_session.commit()
+        await check_username(message)
 
 
 # @dp.message_handler(text=registr_message, state=UserData.start)

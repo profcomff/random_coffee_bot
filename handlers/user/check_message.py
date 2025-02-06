@@ -2,7 +2,7 @@ from asyncio import sleep
 
 from aiogram.utils.exceptions import BotBlocked
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import Users, UserStatus
 from handlers.user.get_info_from_table import get_id_from_user_info_table
 from loader import bot, logger
@@ -23,13 +23,14 @@ async def check_message():
 def prepare_user_list():
     """Подготовка списка id пользователей со статусом готов к встрече."""
     logger.info("""Подготавливаем список пользователей из базы""")
-    data = (
-        db_session.query(Users.teleg_id)
-        .join(UserStatus)
-        .filter(UserStatus.status == 1)
-        .all()
-    )
-    return [element[0] for element in data]
+    with Session() as db_session:
+        data = (
+            db_session.query(Users.teleg_id)
+            .join(UserStatus)
+            .filter(UserStatus.status == 1)
+            .all()
+        )
+        return [element[0] for element in data]
 
 
 async def send_message(teleg_id, **kwargs):
@@ -50,5 +51,6 @@ async def send_message(teleg_id, **kwargs):
 
 async def change_status(teleg_id):
     """Смена статуса участия."""
-    user_id = get_id_from_user_info_table(teleg_id)
-    db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
+    with Session() as db_session:
+        user_id = get_id_from_user_info_table(teleg_id)
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})

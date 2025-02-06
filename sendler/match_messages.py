@@ -2,7 +2,7 @@ from asyncio import sleep
 
 from aiogram import Bot
 
-from controllerBD.db_loader import db_session
+from controllerBD.db_loader import Session
 from controllerBD.models import Gender, Users
 from controllerBD.services import (
     get_defaulf_pare_base_id,
@@ -123,19 +123,20 @@ def make_message(user_info: tuple) -> str:
 def pare_users_query(pare: tuple):
     """Запрашивает информацию по паре юзеров из базы."""
     try:
-        result = (
-            db_session.query(
-                Users.id,
-                Users.teleg_id,
-                Users.name,
-                Users.birthday,
-                Users.about,
-                Gender.gender_name,
+        with Session() as db_session:
+            result = (
+                db_session.query(
+                    Users.id,
+                    Users.teleg_id,
+                    Users.name,
+                    Users.birthday,
+                    Users.about,
+                    Gender.gender_name,
+                )
+                .join(Gender)
+                .filter(Users.id.in_(pare))
+                .all()
             )
-            .join(Gender)
-            .filter(Users.id.in_(pare))
-            .all()
-        )
     except Exception:
         result = None
     finally:
