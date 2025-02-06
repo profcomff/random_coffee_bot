@@ -36,8 +36,15 @@ class MachingHelper:
                 connected_user = (
                     db_session.query(UserMets.met_info)
                     .filter(UserMets.id == now_user)
-                    .first()[0]
+                    .first()
                 )
+                if connected_user:
+                    connected_user = connected_user[0]
+                else:
+                    new_record = UserMets(id=now_user, met_info="{}")
+                    db_session.add(new_record)
+                    db_session.commit()
+                    connected_user = "{}"
                 connected_user = list(set(json.loads(connected_user).values()))
                 data_from_bd[now_user] = connected_user
 
@@ -45,9 +52,12 @@ class MachingHelper:
         adjacency_list = {}
         self.all_active = list(data_from_bd.keys())
         for v in self.all_active:
-            adjacency_list[v] = [
+            candidates = [
                 item for item in self.all_active if item not in data_from_bd[v] + [v]
             ]
+            if not candidates:
+                candidates = [item for item in self.all_active if item != v]
+            adjacency_list[v] = candidates
         logger.debug(f"adjacency_list: {adjacency_list}")
         edges = []
         for v in self.all_active:
