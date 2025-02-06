@@ -107,7 +107,7 @@ def get_user_count_from_db():
 def get_active_user_names_from_db():
     users = []
     with Session() as db_session:
-        for active_user_id, status in db_session.query(UserStatus).filter(UserStatus.status == 1).all():
+        for active_user_id in [user.id for user in db_session.query(UserStatus).filter(UserStatus.status == 1).all()]:
             user_tg_username = db_session.query(Username).filter(Username.id == active_user_id).one_or_none().username
             user_name = db_session.query(Users).filter(Users.id == active_user_id).one_or_none().name
             users.append({"name": user_name, "tg_username": user_tg_username})
