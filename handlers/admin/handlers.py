@@ -78,7 +78,7 @@ async def inform_message_1(message: types.Message):
         await bot.send_message(
             message.from_user.id,
             f"Имя: {user['name']}\n"
-            f"Телеграм: {user['tg_username']}",
+            f"Телеграм: @{user['tg_username']}",
         )
 
 
