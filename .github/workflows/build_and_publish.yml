@@ -52,7 +52,7 @@ jobs:
     environment:
       name: Testing
     env:
-      CONTAINER_NAME: com_profcomff_tgbot_randomcoffee_test
+      CONTAINER_NAME: tgbot_randomcoffee_test
     permissions:
       packages: read
     steps:
@@ -64,7 +64,6 @@ jobs:
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
             --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
@@ -79,22 +78,21 @@ jobs:
             --restart on-failure:3 \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
             --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
 
-  deploy-profcom:
+  deploy-production:
     name: Deploy Production Profcom
     needs: build-and-push-image
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: [ self-hosted, Linux, production ]
     environment:
-      name: Production_profcom
+      name: Production
     env:
-      CONTAINER_NAME: com_profcomff_tgbot_randomcoffee_profcom
+      CONTAINER_NAME: tgbot_randomcoffee
     permissions:
       packages: read
     steps:
@@ -106,7 +104,6 @@ jobs:
             --rm \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
             --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
@@ -121,51 +118,9 @@ jobs:
             --restart always \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
             --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
             --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
             --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           
-  deploy-viribus:
-    name: Deploy Production Viribus
-    needs: build-and-push-image
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: [ self-hosted, Linux, production ]
-    environment:
-      name: Production_viribus
-    env:
-      CONTAINER_NAME: com_profcomff_tgbot_randomcoffee_viribus
-    permissions:
-      packages: read
-    steps:
-      - name: Pull new version
-        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-      - name: Migrate DB
-        run: |
-          docker run \
-            --rm \
-            --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
-            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
-            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
-            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
-            --name ${{ env.CONTAINER_NAME }}_migration \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            alembic upgrade head
-      - name: Run new version
-        run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
-          docker run \
-            --detach \
-            --restart always \
-            --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
-            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
-            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
-            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
-            --name ${{ env.CONTAINER_NAME }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
