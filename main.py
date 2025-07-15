@@ -2,8 +2,8 @@ import asyncio
 
 import aioschedule
 from aiogram import executor
-
 from controllerBD.services import send_message_to_admins
+from data import IS_FOR_BUR
 from handlers.admin.ban_handlers import register_admin_ban_handlers
 from handlers.admin.handlers import register_admin_handlers
 from handlers.user.handlers import register_user_handlers
@@ -32,7 +32,10 @@ register_unknown_message_handler(dp)
 async def scheduler():
     """Расписание выполнения задач."""
     aioschedule.every().day.at("13:00").do(sheduled_check_holidays)
-    aioschedule.every().monday.at("08:45").do(start_algoritm)
+    if IS_FOR_BUR:
+        aioschedule.every().day.at("8:30").do(start_algoritm)
+    else:
+        aioschedule.every().monday.at("08:45").do(start_algoritm)
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
