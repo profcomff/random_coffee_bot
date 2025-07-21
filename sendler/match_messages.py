@@ -10,6 +10,7 @@ from controllerBD.services import (
     update_all_user_mets,
     update_mets,
 )
+from data import IS_FOR_BUR
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import help_texts_markup
 from loader import logger
@@ -103,11 +104,15 @@ def make_message(user_info: tuple) -> str:
     user_about = user_info[4]
     user_gender = user_info[5]
     user_tg_username = get_tg_username_from_db_by_teleg_id(user_id)
-
     base_message = (
         f"На этой неделе твоя пара для кофе: "
         f'<a href="tg://user?id={user_id}">{user_name}</a>'
     )
+    if IS_FOR_BUR:
+        base_message = (
+            f"На сегодня твоя пара для знакомства: "
+            f'<a href="tg://user?id={user_id}">{user_name}</a>'
+        )
     tg_username_message = f"@{user_tg_username}"
     birth_day_message = f"Дата рождения: {user_birthday}"
     about_message = f"Информация: {user_about}"
