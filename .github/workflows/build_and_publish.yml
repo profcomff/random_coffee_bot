@@ -169,46 +169,46 @@ jobs:
             --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-  deploy-burevestnik:
-    name: Deploy Production Bur
-    needs: build-and-push-image
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: [ self-hosted, Linux, production ]
-    environment:
-      name: Production_bur
-    env:
-      CONTAINER_NAME: com_profcomff_tgbot_randomcoffee_bur
-    permissions:
-      packages: read
-    steps:
-      - name: Pull new version
-        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-      - name: Migrate DB
-        run: |
-          docker run \
-            --rm \
-            --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
-            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
-            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
-            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
-            --env IS_FOR_BUR=true \
-            --name ${{ env.CONTAINER_NAME }}_migration \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            alembic upgrade head
-      - name: Run new version
-        run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
-          docker run \
-            --detach \
-            --restart always \
-            --env DB_DSN=${{ secrets.DB_DSN }} \
-            --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
-            --env MARKETING_URL=${{ vars.MARKETING_URL }} \
-            --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
-            --env IS_FOR_BUR=true \
-            --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
-            --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
-            --name ${{ env.CONTAINER_NAME }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+  # deploy-burevestnik:
+  #   name: Deploy Production Bur
+  #   needs: build-and-push-image
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   runs-on: [ self-hosted, Linux, production ]
+  #   environment:
+  #     name: Production_bur
+  #   env:
+  #     CONTAINER_NAME: com_profcomff_tgbot_randomcoffee_bur
+  #   permissions:
+  #     packages: read
+  #   steps:
+  #     - name: Pull new version
+  #       run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+  #     - name: Migrate DB
+  #       run: |
+  #         docker run \
+  #           --rm \
+  #           --env DB_DSN=${{ secrets.DB_DSN }} \
+  #           --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
+  #           --env MARKETING_URL=${{ vars.MARKETING_URL }} \
+  #           --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
+  #           --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
+  #           --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
+  #           --env IS_FOR_BUR=true \
+  #           --name ${{ env.CONTAINER_NAME }}_migration \
+  #           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+  #           alembic upgrade head
+  #     - name: Run new version
+  #       run: |
+  #         docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+  #         docker run \
+  #           --detach \
+  #           --restart always \
+  #           --env DB_DSN=${{ secrets.DB_DSN }} \
+  #           --env TG_TOKEN=${{ secrets.TG_TOKEN }} \
+  #           --env MARKETING_URL=${{ vars.MARKETING_URL }} \
+  #           --env DEFAULT_PARE_iD=${{ vars.DEFAULT_PARE_iD }} \
+  #           --env IS_FOR_BUR=true \
+  #           --env ADMIN_TG_ID=${{ vars.ADMIN_TG_ID }} \
+  #           --env DEFAULT_PARE_USERNAME=${{ vars.DEFAULT_PARE_USERNAME }} \
+  #           --name ${{ env.CONTAINER_NAME }} \
+  #           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
