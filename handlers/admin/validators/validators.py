@@ -85,7 +85,7 @@ async def resolve_user_input_to_db_id(user_input: str):
             return False, None, f"Пользователь с username @{username} не найден"
 
         # Случай 2: Числовой ввод
-        if re.fullmatch(r"^\d+$", user_input):
+        if re.fullmatch(r"^\d{1,15}$", user_input):
             user_id = int(user_input)
 
             # Сначала проверяем, является ли это внутренним ID базы данных
