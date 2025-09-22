@@ -64,6 +64,7 @@ async def resolve_user_input_to_db_id(user_input: str):
     - Внутренний ID базы данных (числовой)
     - Telegram ID (числовой, но больше)
     - Username (начинается с @)
+    - Явный внутренний ID (db:123) для разрешения коллизий
 
     Возвращает кортеж (success: bool, db_id: int | None, message: str)
     """
@@ -84,30 +85,61 @@ async def resolve_user_input_to_db_id(user_input: str):
                 )
             return False, None, f"Пользователь с username @{username} не найден"
 
-        # Случай 2: Числовой ввод
+        # Случай 2: Явное указание внутреннего ID (db:123)
+        if user_input.startswith("db:"):
+            try:
+                db_id = int(user_input[3:])
+                internal_user = (
+                    db_session.query(Users).filter(Users.id == db_id).first()
+                )
+                if internal_user:
+                    return (
+                        True,
+                        db_id,
+                        f"Найден пользователь по явно указанному внутреннему ID: {internal_user.name}",
+                    )
+                return False, None, f"Пользователь с внутренним ID {db_id} не найден"
+            except ValueError:
+                return False, None, "Неверный формат после 'db:'. Используйте db:123"
+
+        # Случай 3: Числовой ввод (может быть коллизия)
         if re.fullmatch(r"^\d{1,15}$", user_input):
             user_id = int(user_input)
 
-            # Сначала проверяем, является ли это внутренним ID базы данных
+            # Проверяем оба типа ID одновременно для обнаружения коллизий
             internal_user = db_session.query(Users).filter(Users.id == user_id).first()
-            if internal_user:
+            telegram_user = (
+                db_session.query(Users).filter(Users.teleg_id == user_id).first()
+            )
+
+            # Случай 1: Найден только по внутреннему ID
+            if internal_user and not telegram_user:
                 return (
                     True,
                     user_id,
                     f"Найден пользователь по внутреннему ID: {internal_user.name}",
                 )
 
-            # Если не найден как внутренний ID, проверяем как Telegram ID
-            telegram_user = (
-                db_session.query(Users).filter(Users.teleg_id == user_id).first()
-            )
-            if telegram_user:
+            # Случай 2: Найден только по Telegram ID
+            if telegram_user and not internal_user:
                 return (
                     True,
                     telegram_user.id,
                     f"Найден пользователь по Telegram ID: {telegram_user.name}",
                 )
 
+            # Случай 3: КОЛЛИЗИЯ - найден и по внутреннему ID, и по Telegram ID
+            if internal_user and telegram_user:
+                # Приоритет отдаем Telegram ID, так как это чаще используется админами
+                return (
+                    True,
+                    telegram_user.id,
+                    f"⚠️ ВНИМАНИЕ: ID {user_id} найден у двух пользователей! "
+                    f"Выбран по Telegram ID: {telegram_user.name}. "
+                    f"Для точности используйте @username или укажите 'db:{user_id}' для внутреннего ID.",
+                )
+
+            # Случай 4: Не найден ни по одному типу ID
             return (
                 False,
                 None,

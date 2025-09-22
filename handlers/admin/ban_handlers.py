@@ -46,9 +46,10 @@ async def ban_list_add(message: types.Message):
     await bot.send_message(
         message.from_user.id,
         "Введите идентификатор пользователя, которого необходимо забанить:\n"
-        "• Внутренний ID базы данных (например: 123)\n"
+        "• Внутренний ID базы данных (например: 123 или db:123)\n"
         "• Telegram ID (например: 987654321)\n"
-        "• Username (например: @username)",
+        "• Username (например: @username)\n"
+        "\n💡 При совпадении ID используйте db:123 для точного указания внутреннего ID",
         reply_markup=admin_cancel_markup(),
     )
     await AdminData.user_ban.set()
@@ -123,9 +124,10 @@ async def ban_list_remove(message: types.Message):
     await bot.send_message(
         message.from_user.id,
         "Введите идентификатор пользователя, которого необходимо убрать из бан листа:\n"
-        "• Внутренний ID базы данных (например: 123)\n"
+        "• Внутренний ID базы данных (например: 123 или db:123)\n"
         "• Telegram ID (например: 987654321)\n"
-        "• Username (например: @username)",
+        "• Username (например: @username)\n"
+        "\n💡 При совпадении ID используйте db:123 для точного указания внутреннего ID",
         reply_markup=admin_cancel_markup(),
     )
     await AdminData.user_unban.set()
