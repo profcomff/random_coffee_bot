@@ -1,10 +1,51 @@
-from aiogram import exceptions, types
-from aiogram.dispatcher import Dispatcher
+import logging
 
-from controllerBD.db_loader import Session
-from controllerBD.models import MetInfo
-from handlers.decorators import user_handlers
-from handlers.user.add_username import check_username
+from aiogram import exceptions, types
+from aiogram.dispatcher import FSMContext
+
+from data import bot
+
+logger = logging.getLogger(__name__)
+from handlers.decorators import (add_tg_username_to_db, check_ban,
+                                 check_profile_exists)
+from handlers.user.ban_check import check_user_in_ban_list
+from handlers.user.get_info_from_table import get_info_from_user_table
+from handlers.user.new_member import add_user_to_base
+from keyboards.user import *
+from states.states import GeneralUserData, UserData
+
+
+async def about_bot(message):
+    """Информация о Random Coffee."""
+    logger.info(
+        f"Пользователь с TG_ID {message.from_user.id} " f"запросил информацию о боте"
+    )
+    await bot.send_message(
+        message.from_user.id,
+        r"""☕️ Алоха\, это бот Рандом Кофе\!
+
+Бот еженедельно подбирает вам собеседника для очной или онлайн\-встречи\. """
+        + r"""Общайтесь\, делитесь идеями и расширяйте круг знакомств\!
+
+*Как это работает\:*
+— Алгоритм формирует пару *каждую неделю*\, стараясь избежать повторов\.
+— После уведомления вы **самостоятельно договариваетесь** о времени и месте\.
+
+*Правила\:*
+— *Хотите отдохнуть\?* Включите «Каникулы» в настройках \(1\-3 недели\) """
+        + r"""*до* распределения пар\.
+— Если пара уже назначена\, а вы не планируете встречаться — """
+        + r"""*предупредите партнёра* и\, например\, перенесите встречу\. """
+        + r"""Игнор — последний вариант\!
+— Хотите перестать рандомкофиться\? Остановите бота через меню Telegram\.
+
+*Советы\:*
+— Идеальный формат\: *20–30 минут* за чашкой кофе или прогулкой\.
+— *Очные встречи* предпочтительнее, но онлайн — допустимая альтернатива\.""",
+        parse_mode="MarkdownV2",
+    )
+
+
 from handlers.user.get_info_from_table import (get_full_user_info_by_id,
                                                get_holidays_status_from_db,
                                                get_id_from_user_info_table,
@@ -77,7 +118,7 @@ async def about_bot(message: types.Message):
     )
     await bot.send_message(
         message.from_user.id,
-        """☕️ Алоха\, это бот Рандом Кофе\!
+        r"""☕️ Алоха\, это бот Рандом Кофе\!
 
 Бот еженедельно подбирает вам собеседника для очной или онлайн\-встречи\. Общайтесь\, делитесь идеями и расширяйте круг знакомств\!
 

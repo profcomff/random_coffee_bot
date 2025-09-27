@@ -91,7 +91,8 @@ class MachingHelper:
         logger.info("Начало работы алгоритма")
         subprocess.call(
             [
-                "./match_algoritm/matchingalogitm -f ./data/match_algoritm_data/input.txt --max"
+                "./match_algoritm/matchingalogitm -f "
+                "./data/match_algoritm_data/input.txt --max"
             ],
             shell=True,
         )

@@ -54,7 +54,6 @@ async def ban_list_add(message: types.Message):
 async def ban_list_add_answer(message: types.Message, state: FSMContext):
     """Получение ответа от админа и проверка введенного id."""
     logger.info(f"Для добавления в бан введен пользователь " f"с if {message.text}.")
-    user_id = message.text
     if not await ban_validator(message):
         return
     await state.update_data(banned_user_id=int(message.text))
@@ -132,7 +131,6 @@ async def ban_list_remove(message: types.Message):
 async def ban_list_remove_answer(message: types.Message, state: FSMContext):
     """Получение ответа с id пользователем для вывода из бана. Валидация."""
     logger.info(f"Для вывода из бана введен пользователь " f"с if {message.text}.")
-    user_id = message.text
     if not await unban_validator(message):
         return
     await state.update_data(unbanned_user_id=int(message.text))
