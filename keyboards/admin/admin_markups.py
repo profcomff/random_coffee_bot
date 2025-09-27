@@ -2,8 +2,7 @@ from aiogram import types
 from aiogram.types import ReplyKeyboardMarkup
 
 from data import ADMIN_TG_ID
-from keyboards.user.defalt_markups import (back_to_main, menu_markup,
-                                           menu_message)
+from keyboards.user.defalt_markups import back_to_main, menu_markup, menu_message
 
 admin_menu_button = "Меню администратора"
 inform = "Отчет"

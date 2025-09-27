@@ -3,8 +3,15 @@ from datetime import datetime
 
 from aiogram import types
 
-from keyboards.user import (all_right_message, back_message, man_message,
-                            no_button, skip_message, woman_message, yes_button)
+from keyboards.user import (
+    all_right_message,
+    back_message,
+    man_message,
+    no_button,
+    skip_message,
+    woman_message,
+    yes_button,
+)
 from loader import bot
 
 

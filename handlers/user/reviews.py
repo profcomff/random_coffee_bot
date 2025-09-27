@@ -8,12 +8,23 @@ from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo, MetsReview
 from handlers.decorators import admin_handlers
 from handlers.user.get_info_from_table import (
-    get_id_from_user_info_table, get_teleg_id_from_user_info_table)
-from handlers.user.validators import (validate_about, validate_review_grade,
-                                      validate_review_yes_or_no)
+    get_id_from_user_info_table,
+    get_teleg_id_from_user_info_table,
+)
+from handlers.user.validators import (
+    validate_about,
+    validate_review_grade,
+    validate_review_yes_or_no,
+)
 from keyboards.admin import review_messages
-from keyboards.user import (menu_markup, no_button, review_skip,
-                            review_yes_or_no, skip_message, yes_button)
+from keyboards.user import (
+    menu_markup,
+    no_button,
+    review_skip,
+    review_yes_or_no,
+    skip_message,
+    yes_button,
+)
 from loader import bot, logger
 from states import ReviewState
 

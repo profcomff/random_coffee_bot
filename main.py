@@ -9,8 +9,7 @@ from handlers.admin.ban_handlers import register_admin_ban_handlers
 from handlers.admin.handlers import register_admin_handlers
 from handlers.user.handlers import register_user_handlers
 from handlers.user.help_texts import register_help_texts_handlers
-from handlers.user.holidays import (register_holidays_handlers,
-                                    sheduled_check_holidays)
+from handlers.user.holidays import register_holidays_handlers, sheduled_check_holidays
 from handlers.user.new_member import register_new_member_handler
 from handlers.user.review_history import register_review_history_handler
 from handlers.user.reviews import register_review_handlers

@@ -10,8 +10,10 @@ from controllerBD.models import MetInfo, MetsReview
 from controllerBD.services import get_tg_username_from_db_by_base_id
 from handlers.decorators import user_handlers
 from handlers.user.add_username import check_username
-from handlers.user.get_info_from_table import (get_id_from_user_info_table,
-                                               get_user_info_by_id)
+from handlers.user.get_info_from_table import (
+    get_id_from_user_info_table,
+    get_user_info_by_id,
+)
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import my_reviews, review_yes_or_no
 from loader import bot, logger

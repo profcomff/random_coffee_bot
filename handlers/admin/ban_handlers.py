@@ -6,12 +6,17 @@ from aiogram.dispatcher import FSMContext
 from controllerBD.db_loader import Session
 from controllerBD.models import BanList, Holidays, UserStatus
 from handlers.admin.handlers import admin_menu
-from handlers.admin.validators import (ban_validator, comment_validator,
-                                       unban_validator)
+from handlers.admin.validators import ban_validator, comment_validator, unban_validator
 from handlers.decorators import admin_handlers
-from keyboards.admin import (add_to_ban_list, admin_ban_markup,
-                             admin_cancel_markup, back_to_main_markup,
-                             ban_list, cancel, remove_from_ban_list)
+from keyboards.admin import (
+    add_to_ban_list,
+    admin_ban_markup,
+    admin_cancel_markup,
+    back_to_main_markup,
+    ban_list,
+    cancel,
+    remove_from_ban_list,
+)
 from keyboards.user import back_to_main
 from loader import bot, logger
 from states import AdminData

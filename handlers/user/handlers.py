@@ -5,11 +5,13 @@ from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo
 from handlers.decorators import user_handlers
 from handlers.user.add_username import check_username
-from handlers.user.get_info_from_table import (get_full_user_info_by_id,
-                                               get_holidays_status_from_db,
-                                               get_id_from_user_info_table,
-                                               get_user_data_from_db,
-                                               get_user_status_from_db)
+from handlers.user.get_info_from_table import (
+    get_full_user_info_by_id,
+    get_holidays_status_from_db,
+    get_id_from_user_info_table,
+    get_user_data_from_db,
+    get_user_status_from_db,
+)
 from handlers.user.new_member import get_gender_from_db, start_registration
 from handlers.user.reviews import get_met_id_with_user_last_week
 from handlers.user.work_with_date import date_from_db_to_message
