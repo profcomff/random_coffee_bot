@@ -4,7 +4,9 @@ from aiogram import Bot
 
 from controllerBD.db_loader import Session
 from controllerBD.models import Gender, Users
-from controllerBD.services import get_tg_username_from_db_by_teleg_id
+from controllerBD.services import (get_defaulf_pare_base_id,
+                                   get_tg_username_from_db_by_teleg_id,
+                                   update_all_user_mets, update_mets)
 from data import IS_FOR_BUR
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import help_texts_markup
