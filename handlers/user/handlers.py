@@ -3,7 +3,7 @@ import logging
 from aiogram import exceptions, types
 from aiogram.dispatcher import FSMContext
 
-from data import bot
+from loader import bot
 
 logger = logging.getLogger(__name__)
 from handlers.decorators import (add_tg_username_to_db, check_ban,
@@ -55,7 +55,6 @@ from handlers.user.new_member import get_gender_from_db, start_registration
 from handlers.user.reviews import get_met_id_with_user_last_week
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import *
-from loader import bot, logger
 from sendler import make_message
 
 
