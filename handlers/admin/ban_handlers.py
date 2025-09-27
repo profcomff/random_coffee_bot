@@ -45,7 +45,11 @@ async def ban_list_add(message: types.Message):
     logger.info("Начало процесса добавления пользователя в бан.")
     await bot.send_message(
         message.from_user.id,
-        "Введите id пользователя, которого необходимо забанить:",
+        "Введите идентификатор пользователя, которого необходимо забанить:\n"
+        "• Внутренний ID базы данных (например: 123 или db:123)\n"
+        "• Telegram ID (например: 987654321)\n"
+        "• Username (например: @username)\n"
+        "\n💡 При совпадении ID используйте db:123 для точного указания внутреннего ID",
         reply_markup=admin_cancel_markup(),
     )
     await AdminData.user_ban.set()
@@ -119,7 +123,11 @@ async def ban_list_remove(message: types.Message):
     logger.info("Начало процесса вывода пользователя из бана.")
     await bot.send_message(
         message.from_user.id,
-        "Введите id пользователя, которого необходимо убрать из бан листа:",
+        "Введите идентификатор пользователя, которого необходимо убрать из бан листа:\n"
+        "• Внутренний ID базы данных (например: 123 или db:123)\n"
+        "• Telegram ID (например: 987654321)\n"
+        "• Username (например: @username)\n"
+        "\n💡 При совпадении ID используйте db:123 для точного указания внутреннего ID",
         reply_markup=admin_cancel_markup(),
     )
     await AdminData.user_unban.set()
@@ -168,7 +176,9 @@ async def comment_to_unban_answer(message: types.Message, state: FSMContext):
 async def save_to_unban(unbanned_user_id, comment):
     """Сохранение в БД, что пользователь выведен из бана."""
     with Session() as db_session:
-        db_session.query(BanList).filter(BanList.banned_user_id == unbanned_user_id).update(
+        db_session.query(BanList).filter(
+            BanList.banned_user_id == unbanned_user_id
+        ).update(
             {
                 "ban_status": 0,
                 "date_of_unban": datetime.date.today(),
