@@ -9,18 +9,11 @@ from controllerBD.models import Holidays, UserStatus
 from handlers.decorators import user_handlers
 from handlers.user.check_message import send_message
 from handlers.user.get_info_from_table import (
-    get_id_from_user_info_table,
-    get_teleg_id_from_user_info_table,
-)
+    get_id_from_user_info_table, get_teleg_id_from_user_info_table)
 from handlers.user.work_with_date import date_from_db_to_message
-from keyboards.user import (
-    holidays_length,
-    one_week_holidays_message,
-    set_holiday_message,
-    three_week_holidays_message,
-    turn_off_holidays,
-    two_week_holidays_message,
-)
+from keyboards.user import (holidays_length, one_week_holidays_message,
+                            set_holiday_message, three_week_holidays_message,
+                            turn_off_holidays, two_week_holidays_message)
 from loader import bot, logger
 
 
