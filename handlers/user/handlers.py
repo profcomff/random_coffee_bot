@@ -1,23 +1,27 @@
-from aiogram import exceptions, types
-from aiogram.dispatcher import Dispatcher
+import logging
 
-from controllerBD.db_loader import Session
-from controllerBD.models import MetInfo
-from handlers.decorators import user_handlers
-from handlers.user.add_username import check_username
-from handlers.user.get_info_from_table import (
-    get_full_user_info_by_id,
-    get_holidays_status_from_db,
-    get_id_from_user_info_table,
-    get_user_data_from_db,
-    get_user_status_from_db,
-)
-from handlers.user.new_member import get_gender_from_db, start_registration
+from aiogram import Dispatcher, exceptions, types
+from aiogram.dispatcher import FSMContext
+
+from handlers.decorators import (add_tg_username_to_db, check_ban,
+                                 check_profile_exists)
+from handlers.user.ban_check import check_user_in_ban_list
+from handlers.user.get_info_from_table import (get_full_user_info_by_id,
+                                               get_holidays_status_from_db,
+                                               get_id_from_user_info_table,
+                                               get_info_from_user_table,
+                                               get_user_data_from_db,
+                                               get_user_status_from_db)
+from handlers.user.new_member import (add_user_to_base, get_gender_from_db,
+                                      start_registration)
 from handlers.user.reviews import get_met_id_with_user_last_week
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import *
-from loader import bot, logger
+from loader import bot
 from sendler import make_message
+from states.states import GeneralUserData, UserData
+
+logger = logging.getLogger(__name__)
 
 
 # @dp.errors_handler(exception=exceptions.RetryAfter)
@@ -79,7 +83,7 @@ async def about_bot(message: types.Message):
     )
     await bot.send_message(
         message.from_user.id,
-        """☕️ Алоха\, это бот Рандом Кофе\!
+        r"""☕️ Алоха\, это бот Рандом Кофе\!
 
 Бот еженедельно подбирает вам собеседника для очной или онлайн\-встречи\. Общайтесь\, делитесь идеями и расширяйте круг знакомств\!
 
@@ -152,7 +156,10 @@ async def my_pare_check(message: types.Message):
     else:
         with Session() as db_session:
             users = (
-                db_session.query(MetInfo).filter(MetInfo.id == met_id[0]).first().__dict__
+                db_session.query(MetInfo)
+                .filter(MetInfo.id == met_id[0])
+                .first()
+                .__dict__
             )
             if users["first_user_id"] == user_id:
                 user_info = get_full_user_info_by_id(users["second_user_id"])

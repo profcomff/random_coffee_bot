@@ -96,7 +96,8 @@ async def resolve_user_input_to_db_id(user_input: str):
                     return (
                         True,
                         db_id,
-                        f"Найден пользователь по явно указанному внутреннему ID: {internal_user.name}",
+                        f"Найден пользователь по явно указанному внутреннему ID: "
+                        f"{internal_user.name}",
                     )
                 return False, None, f"Пользователь с внутренним ID {db_id} не найден"
             except ValueError:
@@ -136,14 +137,16 @@ async def resolve_user_input_to_db_id(user_input: str):
                     telegram_user.id,
                     f"⚠️ ВНИМАНИЕ: ID {user_id} найден у двух пользователей! "
                     f"Выбран по Telegram ID: {telegram_user.name}. "
-                    f"Для точности используйте @username или укажите 'db:{user_id}' для внутреннего ID.",
+                    f"Для точности используйте @username или укажите "
+                    f"'db:{user_id}' для внутреннего ID.",
                 )
 
             # Случай 4: Не найден ни по одному типу ID
             return (
                 False,
                 None,
-                f"Пользователь с ID {user_id} не найден ни в внутренней базе, ни среди Telegram ID",
+                f"Пользователь с ID {user_id} не найден ни в внутренней базе, "
+                f"ни среди Telegram ID",
             )
 
         return False, None, "Неверный формат ввода. Введите число (ID) или username с @"

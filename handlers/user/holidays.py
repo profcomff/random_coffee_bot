@@ -9,18 +9,11 @@ from controllerBD.models import Holidays, UserStatus
 from handlers.decorators import user_handlers
 from handlers.user.check_message import send_message
 from handlers.user.get_info_from_table import (
-    get_id_from_user_info_table,
-    get_teleg_id_from_user_info_table,
-)
+    get_id_from_user_info_table, get_teleg_id_from_user_info_table)
 from handlers.user.work_with_date import date_from_db_to_message
-from keyboards.user import (
-    holidays_length,
-    one_week_holidays_message,
-    set_holiday_message,
-    three_week_holidays_message,
-    turn_off_holidays,
-    two_week_holidays_message,
-)
+from keyboards.user import (holidays_length, one_week_holidays_message,
+                            set_holiday_message, three_week_holidays_message,
+                            turn_off_holidays, two_week_holidays_message)
 from loader import bot, logger
 
 
@@ -92,7 +85,9 @@ async def cancel_holidays(message: types.Message):
         db_session.query(Holidays).filter(Holidays.id == user_id).update(
             {"status": 0, "till_date": "null"}
         )
-        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 1})
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": 1}
+        )
         db_session.commit()
         await bot.send_message(message.from_user.id, text="Режим каникул был отключен")
         logger.info(
@@ -107,7 +102,9 @@ async def get_holidays(message: types.Message, date_to_return):
         db_session.query(Holidays).filter(Holidays.id == user_id).update(
             {"status": 1, "till_date": str(date_to_return)}
         )
-        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": 0}
+        )
         db_session.commit()
         logger.info(
             f"Пользователь с TG_ID {message.from_user.id} "

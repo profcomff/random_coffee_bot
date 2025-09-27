@@ -40,7 +40,9 @@ def get_user_data_from_db(teleg_id):
 def get_user_status_from_db(user_id):
     """Получение статуса участия пользователя из БД"""
     with Session() as db_session:
-        user_status = db_session.query(UserStatus).filter(UserStatus.id == user_id).first()
+        user_status = (
+            db_session.query(UserStatus).filter(UserStatus.id == user_id).first()
+        )
         return user_status.__dict__
 
 
