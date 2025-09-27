@@ -53,4 +53,6 @@ async def change_status(teleg_id):
     """Смена статуса участия."""
     with Session() as db_session:
         user_id = get_id_from_user_info_table(teleg_id)
-        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": 0}
+        )

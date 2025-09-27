@@ -6,33 +6,23 @@ from aiogram.utils.exceptions import BotBlocked
 
 from controllerBD.db_loader import Session
 from controllerBD.models import UserStatus
-from controllerBD.services import get_user_count_from_db, get_active_user_names_from_db
-from handlers.admin.admin_report import prepare_report_message, prepare_user_info
+from controllerBD.services import (get_active_user_names_from_db,
+                                   get_user_count_from_db)
+from handlers.admin.admin_report import (prepare_report_message,
+                                         prepare_user_info)
 from handlers.decorators import admin_handlers
 from handlers.user.check_message import prepare_user_list, send_message
 from handlers.user.get_info_from_table import get_id_from_user_info_table
-from keyboards.admin import (
-    admin_cancel_markup,
-    admin_change_status_markup,
-    admin_inform_markup,
-    admin_menu_button,
-    admin_menu_markup,
-    admin_pair_generation_markup,
-    cancel,
-    change_pair_generation_date,
-    change_status,
-    do_not_take_part_button,
-    force_pair_generation,
-    go_back,
-    inform,
-    inform_active_users,
-    inform_bad_users,
-    pair_generation,
-    renew_pair_generation,
-    send_message_to_all_button,
-    stop_pair_generation,
-    take_part_button,
-)
+from keyboards.admin import (admin_cancel_markup, admin_change_status_markup,
+                             admin_inform_markup, admin_menu_button,
+                             admin_menu_markup, admin_pair_generation_markup,
+                             cancel, change_pair_generation_date,
+                             change_status, do_not_take_part_button,
+                             force_pair_generation, go_back, inform,
+                             inform_active_users, inform_bad_users,
+                             pair_generation, renew_pair_generation,
+                             send_message_to_all_button, stop_pair_generation,
+                             take_part_button)
 from loader import bot, logger
 from match_algoritm.MatchingHelper import start_algoritm
 from states import AdminData
@@ -77,8 +67,7 @@ async def inform_message_1(message: types.Message):
     for user in active_users:
         await bot.send_message(
             message.from_user.id,
-            f"Имя: {user['name']}\n"
-            f"Телеграм: @{user['tg_username']}",
+            f"Имя: {user['name']}\n" f"Телеграм: @{user['tg_username']}",
         )
 
 

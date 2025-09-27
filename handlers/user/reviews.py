@@ -8,23 +8,12 @@ from controllerBD.db_loader import Session
 from controllerBD.models import MetInfo, MetsReview
 from handlers.decorators import admin_handlers
 from handlers.user.get_info_from_table import (
-    get_id_from_user_info_table,
-    get_teleg_id_from_user_info_table,
-)
-from handlers.user.validators import (
-    validate_about,
-    validate_review_grade,
-    validate_review_yes_or_no,
-)
+    get_id_from_user_info_table, get_teleg_id_from_user_info_table)
+from handlers.user.validators import (validate_about, validate_review_grade,
+                                      validate_review_yes_or_no)
 from keyboards.admin import review_messages
-from keyboards.user import (
-    menu_markup,
-    no_button,
-    review_skip,
-    review_yes_or_no,
-    skip_message,
-    yes_button,
-)
+from keyboards.user import (menu_markup, no_button, review_skip,
+                            review_yes_or_no, skip_message, yes_button)
 from loader import bot, logger
 from states import ReviewState
 
@@ -193,7 +182,8 @@ def get_met_id_with_user_last_week(user_id):
                 and_(
                     MetInfo.date.between(str(start_period), str(datetime.date.today)),
                     or_(
-                        MetInfo.first_user_id == user_id, MetInfo.second_user_id == user_id
+                        MetInfo.first_user_id == user_id,
+                        MetInfo.second_user_id == user_id,
                     ),
                 )
             )
@@ -208,7 +198,9 @@ async def check_comment_in_bd(user_id, met_id):
     """Проверка наличия отзыва на встречу."""
     with Session() as db_session:
         is_exist = db_session.query(
-            exists().where(and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id))
+            exists().where(
+                and_(MetsReview.met_id == met_id, MetsReview.who_id == user_id)
+            )
         ).scalar()
         if not is_exist:
             return False

@@ -7,30 +7,17 @@ from controllerBD.models import Gender, Holidays, UserMets, Users, UserStatus
 from handlers.admin.ban_handlers import back_to_main_markup
 from handlers.user.add_username import check_username
 from handlers.user.first_check import check_and_add_registration_button
-from handlers.user.get_info_from_table import (
-    check_user_in_base,
-    get_id_from_user_info_table,
-)
-from handlers.user.validators import (
-    validate_about,
-    validate_birthday,
-    validate_check_info,
-    validate_gender,
-    validate_name,
-)
+from handlers.user.get_info_from_table import (check_user_in_base,
+                                               get_id_from_user_info_table)
+from handlers.user.validators import (validate_about, validate_birthday,
+                                      validate_check_info, validate_gender,
+                                      validate_name)
 from handlers.user.work_with_date import date_from_message_to_db
-from keyboards.user import (
-    back_message,
-    confirm_markup,
-    man_message,
-    register_can_skip_reply_markup,
-    register_man_or_woman_markup,
-    registr_message,
-    return_to_begin_button,
-    return_to_begin_markup,
-    skip_message,
-    woman_message,
-)
+from keyboards.user import (back_message, confirm_markup, man_message,
+                            register_can_skip_reply_markup,
+                            register_man_or_woman_markup, registr_message,
+                            return_to_begin_button, return_to_begin_markup,
+                            skip_message, woman_message)
 from loader import bot, logger
 from states.states import UserData
 
@@ -106,11 +93,17 @@ def add_to_db(teleg_id, name, birthday, about, gender):
     with Session() as db_session:
         db_session.add(
             Users(
-                teleg_id=teleg_id, name=name, birthday=birthday, about=about, gender=gender
+                teleg_id=teleg_id,
+                name=name,
+                birthday=birthday,
+                about=about,
+                gender=gender,
             )
         )
         db_session.commit()
-        logger.info(f"Пользователь с TG_ID {teleg_id} " f"добавлен в БД как новый участник")
+        logger.info(
+            f"Пользователь с TG_ID {teleg_id} " f"добавлен в БД как новый участник"
+        )
 
 
 def update_profile_db(teleg_id, name, birthday, about, gender):
