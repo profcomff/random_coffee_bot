@@ -6,17 +6,12 @@ from aiogram.dispatcher import FSMContext
 from controllerBD.db_loader import Session
 from controllerBD.models import BanList, Holidays, UserStatus
 from handlers.admin.handlers import admin_menu
-from handlers.admin.validators import ban_validator, comment_validator, unban_validator
+from handlers.admin.validators import (ban_validator, comment_validator,
+                                       unban_validator)
 from handlers.decorators import admin_handlers
-from keyboards.admin import (
-    add_to_ban_list,
-    admin_ban_markup,
-    admin_cancel_markup,
-    back_to_main_markup,
-    ban_list,
-    cancel,
-    remove_from_ban_list,
-)
+from keyboards.admin import (add_to_ban_list, admin_ban_markup,
+                             admin_cancel_markup, back_to_main_markup,
+                             ban_list, cancel, remove_from_ban_list)
 from keyboards.user import back_to_main
 from loader import bot, logger
 from states import AdminData
@@ -62,7 +57,7 @@ async def ban_list_add_answer(message: types.Message, state: FSMContext):
     user_id = message.text
     if not await ban_validator(message):
         return
-    await state.update_data(banned_user_id=user_id)
+    await state.update_data(banned_user_id=int(message.text))
     await comment_to_ban(message)
 
 
@@ -140,7 +135,7 @@ async def ban_list_remove_answer(message: types.Message, state: FSMContext):
     user_id = message.text
     if not await unban_validator(message):
         return
-    await state.update_data(unbanned_user_id=user_id)
+    await state.update_data(unbanned_user_id=int(message.text))
     await comment_to_unban(message)
 
 
