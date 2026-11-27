@@ -2,9 +2,8 @@ from datetime import date, timedelta
 
 from aiogram import types
 from aiogram.dispatcher import Dispatcher
-from sqlalchemy import and_
 
-from controllerBD.db_loader import Session
+from controllerBD.db_loader import Session, engine
 from controllerBD.models import Holidays, UserStatus
 from handlers.decorators import user_handlers
 from handlers.user.check_message import send_message
@@ -15,6 +14,7 @@ from handlers.user.get_info_from_table import (
 from handlers.user.work_with_date import date_from_db_to_message
 from keyboards.user import (
     holidays_length,
+    indefinite_holidays_message,
     one_week_holidays_message,
     set_holiday_message,
     three_week_holidays_message,
@@ -22,6 +22,9 @@ from keyboards.user import (
     two_week_holidays_message,
 )
 from loader import bot, logger
+
+INDEFINITE_HOLIDAY = "Неопределенный срок"
+holiday_engine = engine.execution_options(isolation_level="READ COMMITTED")
 
 
 # @dp.message_handler(text=set_holiday_message)
@@ -83,36 +86,47 @@ async def get_three_week_holidays(message: types.Message):
     )
 
 
+@user_handlers
+async def get_indefinite_holidays(message: types.Message):
+    """Пауза в подборе пар до ручного возобновления."""
+    await get_holidays(message, INDEFINITE_HOLIDAY)
+    await bot.send_message(
+        message.from_user.id,
+        text="Подбор пар приостановлен. Чтобы снова участвовать, нажми «Отключить» в меню «Каникулы».",
+    )
+
+
 # @dp.message_handler(text=turn_off_holidays)
 @user_handlers
 async def cancel_holidays(message: types.Message):
     """Отключение режима каникул"""
-    with Session() as db_session:
-        user_id = get_id_from_user_info_table(message.from_user.id)
+    teleg_id = message.from_user.id
+    user_id = get_id_from_user_info_table(teleg_id)
+    with Session(bind=holiday_engine) as db_session, db_session.begin():
         db_session.query(Holidays).filter(Holidays.id == user_id).update(
             {"status": 0, "till_date": "null"}
         )
-        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 1})
-        db_session.commit()
-        await bot.send_message(message.from_user.id, text="Режим каникул был отключен")
-        logger.info(
-            f"Пользователь с TG_ID {message.from_user.id} " f"отключил режим каникул"
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": 1}
         )
+    await bot.send_message(teleg_id, text="Режим каникул был отключен")
+    logger.info(f"Пользователь с TG_ID {teleg_id} отключил режим каникул")
 
 
 async def get_holidays(message: types.Message, date_to_return):
     """Запись данных о каникулах в БД"""
-    with Session() as db_session:
-        user_id = get_id_from_user_info_table(message.from_user.id)
+    teleg_id = message.from_user.id
+    user_id = get_id_from_user_info_table(teleg_id)
+    with Session(bind=holiday_engine) as db_session, db_session.begin():
         db_session.query(Holidays).filter(Holidays.id == user_id).update(
             {"status": 1, "till_date": str(date_to_return)}
         )
-        db_session.query(UserStatus).filter(UserStatus.id == user_id).update({"status": 0})
-        db_session.commit()
-        logger.info(
-            f"Пользователь с TG_ID {message.from_user.id} "
-            f"установил режим каникул до {date_to_return}"
+        db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+            {"status": 0}
         )
+    logger.info(
+        f"Пользователь с TG_ID {teleg_id} установил режим каникул: {date_to_return}"
+    )
 
 
 async def check_holidays_until(teleg_id):
@@ -121,7 +135,9 @@ async def check_holidays_until(teleg_id):
         user_id = get_id_from_user_info_table(teleg_id)
         row = db_session.query(Holidays).filter(Holidays.id == user_id).first().__dict__
         if row["status"] == 0:
-            pass
+            return
+        if row["till_date"] == INDEFINITE_HOLIDAY:
+            await bot.send_message(teleg_id, text="Каникулы включены без срока.")
         else:
             await bot.send_message(
                 teleg_id,
@@ -135,25 +151,26 @@ async def check_holidays_until(teleg_id):
 async def sheduled_check_holidays():
     """Отключение режима каникул при окончании срока. Проверка по расписанию"""
     logger.info("Начало автопроверки статуса каникул")
+    today = str(date.today())
     with Session() as db_session:
-        data = (
-            db_session.query(Holidays.id)
-            .filter(and_(Holidays.status == 1, Holidays.till_date == str(date.today())))
-            .all()
+        expired_users = (
+            db_session.query(Holidays.id).filter_by(status=1, till_date=today).all()
         )
-        if data:
-            for row in data:
-                user_id = get_teleg_id_from_user_info_table(row[0])
-                db_session.query(Holidays).filter(Holidays.id == row[0]).update(
-                    {"status": 0, "till_date": "null"}
-                )
-                db_session.query(UserStatus).filter(UserStatus.id == row[0]).update(
-                    {"status": 1}
-                )
-                db_session.commit()
-                await send_message(teleg_id=user_id, text="Режим каникул был отключен")
-                logger.info(f"Каникулы юзера {user_id} отключены автопроверкой")
-        logger.info("Конец автопроверки статуса каникул")
+    for (user_id,) in expired_users:
+        with Session(bind=holiday_engine) as db_session, db_session.begin():
+            if (
+                not db_session.query(Holidays)
+                .filter_by(id=user_id, status=1, till_date=today)
+                .update({"status": 0, "till_date": "null"})
+            ):
+                continue
+            db_session.query(UserStatus).filter(UserStatus.id == user_id).update(
+                {"status": 1}
+            )
+        teleg_id = get_teleg_id_from_user_info_table(user_id)
+        await send_message(teleg_id=teleg_id, text="Режим каникул был отключен")
+        logger.info(f"Каникулы юзера {teleg_id} отключены автопроверкой")
+    logger.info("Конец автопроверки статуса каникул")
 
 
 def register_holidays_handlers(dp: Dispatcher):
@@ -162,5 +179,8 @@ def register_holidays_handlers(dp: Dispatcher):
     dp.register_message_handler(get_two_week_holidays, text=two_week_holidays_message)
     dp.register_message_handler(
         get_three_week_holidays, text=three_week_holidays_message
+    )
+    dp.register_message_handler(
+        get_indefinite_holidays, text=indefinite_holidays_message
     )
     dp.register_message_handler(cancel_holidays, text=turn_off_holidays)
