@@ -23,6 +23,7 @@ help_texts = "С чего начать"
 one_week_holidays_message = "1 неделя"
 two_week_holidays_message = "2 недели"
 three_week_holidays_message = "3 недели"
+indefinite_holidays_message = "Без срока"
 turn_off_holidays = "Отключить"
 back_to_menu = "Вернуться в меню"
 my_pare_button = "Моя пара"
@@ -111,8 +112,8 @@ def holidays_length():
     """Выбор длины каникул."""
     markup = ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.row(one_week_holidays_message, two_week_holidays_message)
-    markup.row(three_week_holidays_message, turn_off_holidays)
-    markup.row(back_to_menu)
+    markup.row(three_week_holidays_message, indefinite_holidays_message)
+    markup.row(turn_off_holidays, back_to_menu)
     return markup
 
 

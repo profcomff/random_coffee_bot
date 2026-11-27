@@ -12,6 +12,7 @@ from handlers.user.get_info_from_table import (
     get_user_data_from_db,
     get_user_status_from_db,
 )
+from handlers.user.holidays import INDEFINITE_HOLIDAY
 from handlers.user.new_member import get_gender_from_db, start_registration
 from handlers.user.reviews import get_met_id_with_user_last_week
 from handlers.user.work_with_date import date_from_db_to_message
@@ -90,7 +91,7 @@ async def about_bot(message: types.Message):
 *Правила\:*
 — *Хотите отдохнуть\?* Включите «Каникулы» в настройках \(1\-3 недели\) *до* распределения пар\.
 — Если пара уже назначена\, а вы не планируете встречаться — *предупредите партнёра* и\, например\, перенесите встречу\. Игнор — последний вариант\!
-— Хотите перестать рандомкофиться\? Остановите бота через меню Telegram\.
+— Хотите взять паузу без срока\? Выберите «Без срока» в меню «Каникулы»\.
 
 *Советы\:*
 — Идеальный формат\: *20–30 минут* за чашкой кофе или прогулкой\.
@@ -120,18 +121,17 @@ async def status_message(message: types.Message):
     else:
         holidays_row = get_holidays_status_from_db(user_row["id"])
         till_value = holidays_row["till_date"]
-        if till_value == "null" or till_value == "Неопределенный срок":
-            holidays_till = "неопределенной даты"
+        if till_value in ("null", INDEFINITE_HOLIDAY):
+            status = (
+                "Ты не участвуешь в подборе пар. Чтобы снова участвовать, "
+                "нажми «Отключить» в меню «Каникулы»."
+            )
         else:
             holidays_till = date_from_db_to_message(till_value)
-        status = (
-            f"Ты на каникулах до {holidays_till}. "
-            f"В это время пара для встречи тебе предложена не будет. "
-            f"После указанной даты статус 'Активен' "
-            f"будет восстановлен автоматически. Если дата не "
-            f"определена, то отключить каникулы необходимо "
-            f"вручную кнопкой 'Отключить' в меню 'Каникулы'"
-        )
+            status = (
+                f"Ты на каникулах до {holidays_till}. "
+                "После этой даты участие в подборе возобновится автоматически."
+            )
     await bot.send_message(message.from_user.id, text=status)
     logger.info(
         f"Пользователь с TG_ID {message.from_user.id} "
